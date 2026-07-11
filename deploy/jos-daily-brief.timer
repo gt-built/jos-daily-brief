@@ -1,0 +1,9 @@
+[Unit]
+Description=Draai Jos Daily Brief elke ochtend om 06:30
+
+[Timer]
+OnCalendar=*-*-* 06:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

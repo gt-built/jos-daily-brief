@@ -1,0 +1,9 @@
+[Unit]
+Description=Jos Daily Brief - genereer de ochtendbon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/jos-daily-brief
+ExecStart=%h/jos-daily-brief/.venv/bin/python -m daily_brief --print

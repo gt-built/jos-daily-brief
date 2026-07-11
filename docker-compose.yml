@@ -1,0 +1,13 @@
+services:
+  daily-brief:
+    build: .
+    env_file: .env
+    restart: "no"
+    volumes:
+      - ./config:/root/.config/jos-daily-brief
+      - ./cache:/root/.cache/jos-daily-brief
+      - ./output:/app/output
+    # Printer USB passthrough — uncomment once the Epson is attached to the
+    # Proxmox host and passed into this VM (see docs/requirements.md / plan):
+    # devices:
+    #   - /dev/usb/lp0:/dev/usb/lp0
