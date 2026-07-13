@@ -95,16 +95,24 @@ De vernieuwbare token-cache komt buiten het project te staan in
 
 ## AI-nieuws en Synology
 
-De nieuwssectie verzamelt wereldwijd relevante AI-artikelen uit de laatste
-24 uur via GDELT. OpenAI selecteert maximaal drie onderwerpen en schrijft per
-onderwerp exact vijf korte Nederlandse samenvattingsregels. Stel daarvoor in:
+De nieuwssectie haalt AI-gerelateerde posts op uit je favoriete subreddits.
+OpenAI selecteert daaruit de vijf meest relevante posts en schrijft per post
+maximaal vijf korte Nederlandse samenvattingsregels. Stel in:
 
 ```bash
 OPENAI_API_KEY="jouw-api-key"
 OPENAI_NEWS_MODEL="gpt-5.4-mini"
+DAILY_BRIEF_REDDIT_SUBREDDITS="AI_Agents;ClaudeAI;technology"
+REDDIT_CLIENT_ID="jouw-client-id"
+REDDIT_CLIENT_SECRET="jouw-client-secret"
 ```
 
-Er is geen algemeen NOS- of Tweakers-nieuws meer.
+Reddit vereist sinds 2023 OAuth, ook voor het lezen van publieke subreddits.
+Maak op <https://old.reddit.com/prefs/apps> een app aan van het type
+**script** (persoonlijk gebruik) en vul de client-ID (staat direct onder de
+appnaam) en het secret hierboven in. `daily_brief/news.py` (GDELT + RSS)
+blijft bestaan maar wordt niet meer standaard gebruikt; `DAILY_BRIEF_RSS_FEEDS`
+heeft dus voorlopig geen effect.
 
 Maak voor Synology een apart DSM-account met alleen leesrechten. Bewaar de
 verbinding in `~/.config/jos-daily-brief/synology.json`:

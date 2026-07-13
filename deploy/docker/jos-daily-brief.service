@@ -1,0 +1,10 @@
+[Unit]
+Description=Jos Daily Brief (Docker)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/jos/jos-daily-brief
+ExecStart=/usr/bin/docker compose run --rm daily-brief --print
