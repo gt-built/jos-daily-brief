@@ -80,7 +80,7 @@ def _summarize(candidates: List[Dict], opener: Callable) -> List[Dict]:
             "topics": {
                 "type": "array",
                 "minItems": 1,
-                "maxItems": 3,
+                "maxItems": 5,
                 "items": {
                     "type": "object",
                     "properties": {
@@ -104,7 +104,9 @@ def _summarize(candidates: List[Dict], opener: Callable) -> List[Dict]:
     body = {
         "model": os.getenv("OPENAI_NEWS_MODEL", "gpt-5.4-mini"),
         "instructions": (
-            "Selecteer maximaal drie wereldwijd relevante AI-onderwerpen. "
+            "Selecteer maximaal vijf wereldwijd relevante AI-onderwerpen. Geef nieuws over "
+            "Claude en Anthropic voorrang boven ander AI-nieuws wanneer dat aanwezig is in de "
+            "aangeleverde kandidaten, maar vul aan met andere relevante AI-onderwerpen tot vijf. "
             "Gebruik uitsluitend de aangeleverde feiten. Schrijf een korte Nederlandse kop "
             "en exact vijf compacte Nederlandse samenvattingsregels per onderwerp."
         ),
@@ -218,7 +220,7 @@ def fetch_news(
                     "description": _safe_article_description(opener, url),
                 }
             )
-            if len(candidates) == 10:
+            if len(candidates) == 15:
                 break
         if not candidates:
             raise OSError("Geen bruikbare AI-artikelen uit de laatste 24 uur")
@@ -234,7 +236,7 @@ def fetch_news(
     )
     items = [
         NewsItem(topic["title"], topic["source"], "\n".join(topic["lines"]))
-        for topic in cached.payload.get("topics", [])[:3]
+        for topic in cached.payload.get("topics", [])[:5]
     ]
     return NewsResult(
         items,

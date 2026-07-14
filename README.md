@@ -64,7 +64,20 @@ desktoptoepassing en bewaar het gedownloade bestand als:
 ~/.config/jos-daily-brief/google-credentials.json
 ```
 
-Meld daarna eenmalig aan:
+Meld daarna eenmalig aan. Draai je dit in Docker op een andere machine dan
+waar je browser op staat (bijv. de Proxmox-VM), open dan eerst een
+SSH-tunnel naar de vaste inlogpoort (8765) en start de login-container met
+diezelfde poort doorgezet:
+
+```bash
+ssh -L 8765:localhost:8765 jos@192.168.1.107   # lokaal, op je Mac
+docker compose run --rm -p 8765:8765 --entrypoint python daily-brief \
+  -m daily_brief.google_contacts login          # op de VM
+```
+
+Open de geprinte URL in de browser op je Mac; de tunnel zorgt dat de
+redirect naar `localhost:8765` bij de container terechtkomt. Draai je lokaal
+zonder Docker, dan volstaat:
 
 ```bash
 python -m daily_brief.google_contacts login
@@ -95,24 +108,24 @@ De vernieuwbare token-cache komt buiten het project te staan in
 
 ## AI-nieuws en Synology
 
-De nieuwssectie haalt AI-gerelateerde posts op uit je favoriete subreddits.
-OpenAI selecteert daaruit de vijf meest relevante posts en schrijft per post
-maximaal vijf korte Nederlandse samenvattingsregels. Stel in:
+De nieuwssectie doorzoekt GDELT op AI-gerelateerd nieuws van de afgelopen 24
+uur (met een voorkeur voor Anthropic/Claude, zie de query in
+`daily_brief/news.py`). OpenAI selecteert daaruit maximaal vijf onderwerpen
+en schrijft per onderwerp vijf korte Nederlandse samenvattingsregels. Stel in:
 
 ```bash
 OPENAI_API_KEY="jouw-api-key"
 OPENAI_NEWS_MODEL="gpt-5.4-mini"
-DAILY_BRIEF_REDDIT_SUBREDDITS="AI_Agents;ClaudeAI;technology"
-REDDIT_CLIENT_ID="jouw-client-id"
-REDDIT_CLIENT_SECRET="jouw-client-secret"
 ```
 
-Reddit vereist sinds 2023 OAuth, ook voor het lezen van publieke subreddits.
-Maak op <https://old.reddit.com/prefs/apps> een app aan van het type
-**script** (persoonlijk gebruik) en vul de client-ID (staat direct onder de
-appnaam) en het secret hierboven in. `daily_brief/news.py` (GDELT + RSS)
-blijft bestaan maar wordt niet meer standaard gebruikt; `DAILY_BRIEF_RSS_FEEDS`
-heeft dus voorlopig geen effect.
+Geen registratie of API-sleutel nodig voor de nieuwsbron zelf (GDELT is
+publiek toegankelijk). Optioneel kun je met `DAILY_BRIEF_RSS_FEEDS` extra
+RSS/Atom-feeds als achtergrond meegeven, zie `.env.example`.
+
+`daily_brief/reddit_news.py` bevat een eerdere, Reddit-gebaseerde variant van
+deze sectie. Die staat uit sinds Reddit's "Responsible Builder
+Policy" het aanmaken van een OAuth-app blokkeerde; de module blijft bestaan
+voor het geval dat later oplost, maar wordt niet aangeroepen.
 
 Maak voor Synology een apart DSM-account met alleen leesrechten. Bewaar de
 verbinding in `~/.config/jos-daily-brief/synology.json`:

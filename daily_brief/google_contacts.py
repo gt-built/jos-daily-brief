@@ -19,13 +19,16 @@ class GoogleBirthdaysResult:
     stale: bool = False
 
 
+LOGIN_PORT = 8765
+
+
 def login() -> None:
     from google_auth_oauthlib.flow import InstalledAppFlow
 
     if not CREDENTIALS_FILE.exists():
         raise RuntimeError(f"Google OAuth-bestand ontbreekt: {CREDENTIALS_FILE}")
     flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-    credentials = flow.run_local_server(port=0, open_browser=False)
+    credentials = flow.run_local_server(port=LOGIN_PORT, open_browser=False)
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     TOKEN_FILE.write_text(credentials.to_json(), encoding="utf-8")
     TOKEN_FILE.chmod(0o600)
