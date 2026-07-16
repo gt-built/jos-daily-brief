@@ -71,7 +71,7 @@ diezelfde poort doorgezet:
 
 ```bash
 ssh -L 8765:localhost:8765 jos@192.168.1.107   # lokaal, op je Mac
-docker compose run --rm -p 8765:8765 --entrypoint python daily-brief \
+docker compose run --rm --network host --entrypoint python daily-brief \
   -m daily_brief.google_contacts login          # op de VM
 ```
 
