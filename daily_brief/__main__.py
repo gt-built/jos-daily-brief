@@ -1,9 +1,20 @@
 import argparse
+import os
+from datetime import date
 from pathlib import Path
+from typing import Optional
 
 from .brief import build_daily_brief
 from .renderer import DEFAULT_PRINTER_DEVICE, print_escpos, render_png, render_text
 from .settings import load_env_file
+
+
+def _is_paused(today: Optional[date] = None) -> bool:
+    start = os.getenv("DAILY_BRIEF_PAUSE_FROM")
+    end = os.getenv("DAILY_BRIEF_PAUSE_UNTIL")
+    if not start or not end:
+        return False
+    return date.fromisoformat(start) <= (today or date.today()) <= date.fromisoformat(end)
 
 
 def main() -> None:
@@ -33,6 +44,10 @@ def main() -> None:
         help="Raw printerdevice (standaard: /dev/usb/lp0).",
     )
     args = parser.parse_args()
+
+    if args.print_receipt and _is_paused():
+        print("Print overgeslagen: vakantiepauze actief (DAILY_BRIEF_PAUSE_FROM/UNTIL).")
+        return
 
     brief = build_daily_brief()
 
