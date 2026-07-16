@@ -71,8 +71,7 @@ diezelfde poort doorgezet:
 
 ```bash
 ssh -L 8765:localhost:8765 jos@192.168.1.107   # lokaal, op je Mac
-docker compose run --rm --network host --entrypoint python daily-brief \
-  -m daily_brief.google_contacts login          # op de VM
+docker compose run --rm google-login            # op de VM
 ```
 
 Open de geprinte URL in de browser op je Mac; de tunnel zorgt dat de

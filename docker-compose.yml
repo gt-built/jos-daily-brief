@@ -11,3 +11,16 @@ services:
     # Proxmox host and passed into this VM (see docs/requirements.md / plan):
     # devices:
     #   - /dev/usb/lp0:/dev/usb/lp0
+
+  # Eenmalige (of periodieke) Google OAuth-login. network_mode: host is nodig
+  # zodat de lokale redirect-server op "localhost" bereikbaar is zonder
+  # Docker-NAT-mismatch — zie daily_brief/google_contacts.py login().
+  google-login:
+    build: .
+    env_file: .env
+    network_mode: host
+    entrypoint: ["python", "-m", "daily_brief.google_contacts"]
+    command: ["login"]
+    volumes:
+      - ./config:/root/.config/jos-daily-brief
+      - ./cache:/root/.cache/jos-daily-brief
