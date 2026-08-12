@@ -1,8 +1,8 @@
 # Jos Daily Brief
 
-Een kleine, printer-onafhankelijke basis voor een persoonlijke ochtendbrief op
-80 mm bonpapier. Zolang de Epson-printer er nog niet is, wordt de bon als PNG
-opgeslagen.
+Een persoonlijke ochtendbrief op 80 mm bonpapier, geprint via een Epson
+ESC/POS-thermische printer. Zonder aangesloten printer (bijv. lokaal
+ontwikkelen) wordt de bon als PNG opgeslagen.
 
 De vastgelegde huidige en toekomstige wensen staan in
 [`docs/requirements.md`](docs/requirements.md).
@@ -28,11 +28,15 @@ inhoud in de terminal bekijken:
 python -m daily_brief --text
 ```
 
-Op de Raspberry Pi print je dezelfde bon direct via ESC/POS:
+Met een aangesloten thermische printer print je dezelfde bon direct via
+ESC/POS:
 
 ```bash
 python -m daily_brief --print
 ```
+
+In productie draait dit in Docker op een Proxmox-VM, zie
+["Docker (productie)"](#docker-productie) hieronder.
 
 De weersverwachting wordt automatisch opgehaald bij Open-Meteo. De standaard
 is Drunen, Noord-Brabant. Je kunt later een andere locatie instellen zonder
@@ -54,6 +58,52 @@ prioriteiten voor vandaag uit BrainJos opgehaald. De agenda komt rechtstreeks
 uit Microsoft 365.
 
 Onderaan staat iedere dag een korte, wisselende taoïstische gedachte.
+
+## Docker (productie)
+
+Productie draait in Docker op een Proxmox-VM (repo in `~/jos-daily-brief`),
+niet meer op de oorspronkelijke Raspberry Pi.
+
+```bash
+docker compose build
+docker compose run --rm daily-brief --text     # testen zonder te printen
+docker compose run --rm daily-brief --print    # echte bon
+```
+
+`docker-compose.yml` bind-mount't `./config`, `./cache` en `./output` naar de
+container (die als root draait, dus `/root/.config/jos-daily-brief` etc.) en
+leest secrets uit `.env` (`chmod 600`, alleen op de VM ingevuld — nooit in
+git of in een chatgesprek). De thermische printer wordt via USB doorgezet:
+eerst Proxmox host → VM (Hardware → Add → USB Device in de Proxmox-UI), dan
+VM → container via `devices: /dev/usb/lp0` in de compose-file.
+
+Voor de eenmalige/incidentele Google-login draait een los `google-login`
+compose-service, zie de sectie "Verjaardagen uit Google Contacts" hieronder.
+
+### Elke ochtend automatisch een bon
+
+Een systemd **system**-timer op de VM (niet in dit repo, geïnstalleerd op
+`/etc/systemd/system/`) draait dagelijks om 06:30:
+
+```bash
+sudo cp deploy/docker/jos-daily-brief.service /etc/systemd/system/
+sudo cp deploy/docker/jos-daily-brief.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now jos-daily-brief.timer
+```
+
+Controleren:
+
+```bash
+systemctl list-timers jos-daily-brief.timer
+sudo journalctl -u jos-daily-brief.service   # sudo nodig voor de output
+```
+
+`Persistent=true` haalt een gemiste run in (bijv. na een VM-reboot rond
+06:30). Om tijdelijk geen bon te printen (bijv. vakantie) zonder de timer
+aan te raken, zet je `DAILY_BRIEF_PAUSE_FROM`/`DAILY_BRIEF_PAUSE_UNTIL`
+(ISO-datums, inclusief) in `.env` — `--print` slaat die periode stil over,
+`--text` blijft altijd werken. Zie `.env.example`.
 
 ## Verjaardagen uit Google Contacts
 
@@ -96,7 +146,8 @@ MS_GRAPH_CLIENT_ID="jouw-client-id"
 MS_GRAPH_TENANT_ID="common"
 ```
 
-Meld de Raspberry Pi eenmalig aan:
+Meld eenmalig aan (device-code-flow, dus geen lokale redirect-server nodig
+— werkt identiek lokaal of in de Docker-container op de VM):
 
 ```bash
 python -m daily_brief.microsoft login
@@ -146,44 +197,25 @@ chmod 600 ~/.config/jos-daily-brief/synology.json
 Voor een beperkt account gebruikt Daily Brief bij voorkeur SNMPv3. Zet de
 SNMPv3-instellingen in
 `~/.config/jos-daily-brief/synology-snmp.json` met bestandsrechten `0600`.
-Wanneer dit bestand bestaat, krijgt SNMP voorrang op de DSM WebAPI. Installeer
-op Raspberry Pi OS ook de commandoregelclient:
+Wanneer dit bestand bestaat, krijgt SNMP voorrang op de DSM WebAPI. Het
+Docker-image installeert de `snmp`-commandoregelclient al (zie
+`Dockerfile`); draai je lokaal zonder Docker, installeer die dan zelf:
 
 ```bash
-sudo apt install snmp
+sudo apt install snmp   # of: brew install net-snmp
 ```
 
 De NAS-sectie wordt alleen afgedrukt bij een concrete opslag-, temperatuur- of
 Security Advisor-waarschuwing. Een gezonde NAS neemt dus geen ruimte in op de
 bon. Alle broncaches staan in `~/.cache/jos-daily-brief/`.
 
-## Elke ochtend automatisch een bon (Raspberry Pi)
+## Verouderd: Raspberry Pi user-timer
 
-Met een systemd user-timer maakt en print de Pi elke ochtend om 06:30
-automatisch een nieuwe dagelijkse brief.
-
-```bash
-mkdir -p ~/.config/systemd/user
-cp deploy/jos-daily-brief.service ~/.config/systemd/user/
-cp deploy/jos-daily-brief.timer ~/.config/systemd/user/
-
-systemctl --user daemon-reload
-systemctl --user enable --now jos-daily-brief.timer
-```
-
-De service verwacht het project in `~/jos-daily-brief` met een venv in
-`~/jos-daily-brief/.venv`. Wijk je van dat pad af, pas dan `WorkingDirectory`
-en `ExecStart` in `deploy/jos-daily-brief.service` aan.
-
-Handig om te controleren:
-
-```bash
-systemctl --user list-timers jos-daily-brief.timer
-journalctl --user -u jos-daily-brief.service
-```
-
-Zorg dat `loginctl enable-linger $USER` is uitgevoerd, anders stopt de
-user-timer zodra je uitlogt van je SSH-sessie.
+De oorspronkelijke opzet draaide op een Raspberry Pi met een systemd
+**user**-timer (`deploy/jos-daily-brief.service` + `.timer`, lokale venv
+i.p.v. Docker). Dat is retired sinds de migratie naar Docker op de VM (zie
+["Docker (productie)"](#docker-productie)); de bestanden staan er nog als
+historische referentie maar worden niet meer gebruikt.
 
 ## Opzet
 
@@ -197,11 +229,14 @@ user-timer zodra je uitlogt van je SSH-sessie.
 - `daily_brief/formula_one.py`: laatste Formule 1-uitslag
 - `daily_brief/moon.py`: dagelijkse maanstand en -teken, persoonlijk geduid
   voor Jos' geboortehoroscoop (zie `docs/requirements.md`)
-- `daily_brief/news.py`: configureerbare RSS- en Atom-feeds
+- `daily_brief/news.py`: AI-nieuws via GDELT (standaard), met optionele
+  RSS/Atom-feeds als achtergrond
+- `daily_brief/reddit_news.py`: eerdere Reddit-gebaseerde variant van de
+  NIEUWS-sectie, momenteel niet aangeroepen (zie "AI-nieuws en Synology")
 - `daily_brief/synology.py`: compacte DSM-systeem- en opslagstatus
-- `daily_brief/renderer.py`: renderer voor een bon van 80 mm
-- `daily_brief/__main__.py`: lokaal startcommando
+- `daily_brief/renderer.py`: renderer voor een bon van 80 mm (PNG en ESC/POS)
+- `daily_brief/__main__.py`: CLI-entrypoint (`--text`/`--print`), incl.
+  vakantiepauze-check
 
 Later vervangen we de testgegevens één voor één door echte koppelingen. De
-renderer blijft daarbij hetzelfde. Zodra de Epson beschikbaar is, voegen we
-naast de PNG-renderer een ESC/POS-uitvoer toe.
+renderer blijft daarbij hetzelfde.
