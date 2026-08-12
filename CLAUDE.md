@@ -51,9 +51,12 @@ For each task, provide:
   via `nano` — never pasted into chat, never committed.
 
 ## Known gotchas
-- GDELT (`daily_brief/news.py`) rate-limits to 1 request/5s and returns a
-  plain-text body explaining that on 429 — don't hammer it with rapid manual
-  test runs while debugging; space retries out.
+- NIEUWS source history: GDELT (`daily_brief/news.py`) rate-limits to 1
+  request/5s and returned 429s too often for a reliable daily run; Reddit
+  (`daily_brief/reddit_news.py`) is blocked by Reddit's own app-registration
+  policy. Current default is `daily_brief/tweakers_news.py` (Tweakers RSS,
+  keyword-filtered, no auth needed). All three modules stay in the repo;
+  only one is wired up in `brief.py` at a time.
 - `InstalledAppFlow.run_local_server()` (Google login) binds to `localhost`
   inside the container. Docker's port-publish NAT delivers traffic to the
   container's real interface, not loopback, so a published port silently
@@ -62,8 +65,10 @@ For each task, provide:
   baked into the advertised `redirect_uri`, breaking the browser redirect.
 - Printer is an Epson TM-T88-family unit (576-dot/72mm print head) reached
   via USB passthrough: Proxmox host → VM → container. Paper is 78mm, leaving
-  only ~3mm slack per side — a right-edge print cutoff was traced to
-  physical roll alignment under the head, not a code/width issue.
+  only ~3mm slack per side — a right-edge print cutoff (teletekst page
+  numbers) was compensated in software via `MARGIN_RIGHT` in
+  `daily_brief/renderer.py` (larger than the left `MARGIN`) rather than by
+  re-centering the roll — a pragmatic buffer, not a confirmed root-cause fix.
 - Vacation/pause printing without touching the timer: set
   `DAILY_BRIEF_PAUSE_FROM` / `DAILY_BRIEF_PAUSE_UNTIL` (ISO dates, inclusive)
   in `.env` on the VM. `--print` no-ops in that range; `--text` still works.

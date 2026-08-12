@@ -7,10 +7,10 @@ from .google_contacts import fetch_google_birthdays
 from .microsoft import fetch_microsoft_agenda
 from .models import SynologyStatus
 from .moon import fetch_moon_insight
-from .news import fetch_news
 from .sample_data import make_sample_brief
 from .synology import fetch_synology_status
 from .teletekst import fetch_teletekst_headlines
+from .tweakers_news import fetch_tweakers_news
 from .weather import fetch_weather_with_status
 
 
@@ -18,7 +18,7 @@ def build_daily_brief(
     weather_fetcher: Callable = fetch_weather_with_status,
     brainjos_fetcher: Callable = fetch_brainjos_with_status,
     agenda_fetcher: Callable = fetch_microsoft_agenda,
-    news_fetcher: Callable = fetch_news,
+    news_fetcher: Callable = fetch_tweakers_news,
     synology_fetcher: Callable = fetch_synology_status,
     formula_one_fetcher: Callable = fetch_formula_one_result,
     birthday_fetcher: Callable = fetch_google_birthdays,

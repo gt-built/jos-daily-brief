@@ -9,7 +9,8 @@ from .models import DailyBrief
 
 WIDTH = 576
 MARGIN = 32
-CONTENT_WIDTH = WIDTH - (2 * MARGIN)
+MARGIN_RIGHT = 64
+CONTENT_WIDTH = WIDTH - MARGIN - MARGIN_RIGHT
 DEFAULT_PRINTER_DEVICE = Path("/dev/usb/lp0")
 PRINT_HORIZONTAL_OFFSET = -24
 DUTCH_WEEKDAYS = (
@@ -153,7 +154,7 @@ def render_png(brief: DailyBrief, output: Path) -> Path:
 
     def line(gap: int = 18) -> None:
         nonlocal y
-        draw.line((MARGIN, y, WIDTH - MARGIN, y), fill="black", width=2)
+        draw.line((MARGIN, y, WIDTH - MARGIN_RIGHT, y), fill="black", width=2)
         y += gap
 
     def heading(text: str) -> None:
@@ -175,20 +176,13 @@ def render_png(brief: DailyBrief, output: Path) -> Path:
         high = f"{brief.weather.high_c}°"
         low_box = draw.textbbox((0, 0), low, font=body_font)
         high_box = draw.textbbox((0, 0), high, font=body_font)
-        low_width = low_box[2] - low_box[0]
         high_width = high_box[2] - high_box[0]
         draw.text((MARGIN, y), low, fill="black", font=body_font)
-        draw.text((WIDTH - MARGIN - high_width, y), high, fill="black", font=body_font)
-        line_y = y + 15
-        start_x = MARGIN + low_width + 18
-        end_x = WIDTH - MARGIN - high_width - 18
-        draw.line((start_x, line_y, end_x, line_y), fill="black", width=2)
-        draw.ellipse((start_x - 3, line_y - 3, start_x + 3, line_y + 3), fill="black")
-        draw.ellipse((end_x - 3, line_y - 3, end_x + 3, line_y + 3), fill="black")
-        y += 32
+        draw.text((WIDTH - MARGIN_RIGHT - high_width, y), high, fill="black", font=body_font)
+        y += low_box[3] - low_box[1] + 10
         draw.text((MARGIN, y), "min", fill="black", font=small_font)
         max_box = draw.textbbox((0, 0), "max", font=small_font)
-        draw.text((WIDTH - MARGIN - (max_box[2] - max_box[0]), y), "max", fill="black", font=small_font)
+        draw.text((WIDTH - MARGIN_RIGHT - (max_box[2] - max_box[0]), y), "max", fill="black", font=small_font)
         y += 34
 
     def teletekst_row(text: str) -> None:
@@ -218,7 +212,7 @@ def render_png(brief: DailyBrief, output: Path) -> Path:
             draw.text((MARGIN, y), line_text, fill="black", font=small_font)
             if index == 0:
                 draw.text(
-                    (WIDTH - MARGIN - page_width, y),
+                    (WIDTH - MARGIN_RIGHT - page_width, y),
                     page,
                     fill="black",
                     font=small_font,

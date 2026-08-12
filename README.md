@@ -158,24 +158,28 @@ De vernieuwbare token-cache komt buiten het project te staan in
 
 ## AI-nieuws en Synology
 
-De nieuwssectie doorzoekt GDELT op AI-gerelateerd nieuws van de afgelopen 24
-uur (met een voorkeur voor Anthropic/Claude, zie de query in
-`daily_brief/news.py`). OpenAI selecteert daaruit maximaal vijf onderwerpen
-en schrijft per onderwerp vijf korte Nederlandse samenvattingsregels. Stel in:
+De nieuwssectie haalt `https://tweakers.net/feeds/nieuws.xml` op en filtert
+op AI-gerelateerde koppen/omschrijvingen (AI, LLM, ChatGPT, OpenAI,
+Anthropic, Claude, Gemini, kunstmatige intelligentie, machine learning,
+chatbot — zie `AI_KEYWORDS_*` in `daily_brief/tweakers_news.py`). De
+originele Tweakers-kop blijft ongewijzigd; OpenAI schrijft per bericht een
+samenvatting van exact vijf Nederlandse regels, maximaal vijf berichten. Stel
+in:
 
 ```bash
 OPENAI_API_KEY="jouw-api-key"
 OPENAI_NEWS_MODEL="gpt-5.4-mini"
 ```
 
-Geen registratie of API-sleutel nodig voor de nieuwsbron zelf (GDELT is
-publiek toegankelijk). Optioneel kun je met `DAILY_BRIEF_RSS_FEEDS` extra
-RSS/Atom-feeds als achtergrond meegeven, zie `.env.example`.
+Geen registratie of API-sleutel nodig voor de nieuwsbron zelf (de
+Tweakers-RSS-feed is publiek toegankelijk).
 
-`daily_brief/reddit_news.py` bevat een eerdere, Reddit-gebaseerde variant van
-deze sectie. Die staat uit sinds Reddit's "Responsible Builder
-Policy" het aanmaken van een OAuth-app blokkeerde; de module blijft bestaan
-voor het geval dat later oplost, maar wordt niet aangeroepen.
+`daily_brief/news.py` (GDELT) en `daily_brief/reddit_news.py` (Reddit) zijn
+eerdere varianten van deze sectie. GDELT bleek te vaak op de eigen
+rate-limit (1 request/5s) te stuiten voor een betrouwbare dagelijkse run;
+Reddit staat uit sinds Reddit's "Responsible Builder Policy" het aanmaken
+van een OAuth-app blokkeerde. Beide modules blijven bestaan maar worden niet
+aangeroepen.
 
 Maak voor Synology een apart DSM-account met alleen leesrechten. Bewaar de
 verbinding in `~/.config/jos-daily-brief/synology.json`:
@@ -229,10 +233,11 @@ historische referentie maar worden niet meer gebruikt.
 - `daily_brief/formula_one.py`: laatste Formule 1-uitslag
 - `daily_brief/moon.py`: dagelijkse maanstand en -teken, persoonlijk geduid
   voor Jos' geboortehoroscoop (zie `docs/requirements.md`)
-- `daily_brief/news.py`: AI-nieuws via GDELT (standaard), met optionele
-  RSS/Atom-feeds als achtergrond
-- `daily_brief/reddit_news.py`: eerdere Reddit-gebaseerde variant van de
-  NIEUWS-sectie, momenteel niet aangeroepen (zie "AI-nieuws en Synology")
+- `daily_brief/tweakers_news.py`: AI-nieuws via de Tweakers-RSS-feed
+  (standaard NIEUWS-bron)
+- `daily_brief/news.py`: eerdere GDELT-gebaseerde variant, niet aangeroepen
+- `daily_brief/reddit_news.py`: eerdere Reddit-gebaseerde variant, niet
+  aangeroepen (zie "AI-nieuws en Synology")
 - `daily_brief/synology.py`: compacte DSM-systeem- en opslagstatus
 - `daily_brief/renderer.py`: renderer voor een bon van 80 mm (PNG en ESC/POS)
 - `daily_brief/__main__.py`: CLI-entrypoint (`--text`/`--print`), incl.
