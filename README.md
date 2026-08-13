@@ -163,8 +163,10 @@ op AI-gerelateerde koppen/omschrijvingen (AI, LLM, ChatGPT, OpenAI,
 Anthropic, Claude, Gemini, kunstmatige intelligentie, machine learning,
 chatbot — zie `AI_KEYWORDS_*` in `daily_brief/tweakers_news.py`). De
 originele Tweakers-kop blijft ongewijzigd; OpenAI schrijft per bericht een
-samenvatting van exact vijf Nederlandse regels, maximaal vijf berichten. Stel
-in:
+doorlopende samenvatting van circa vijf zinnen (geen opsomming), maximaal
+drie berichten. Een artikel dat al eens op de bon heeft gestaan (bijgehouden
+op guid in `~/.cache/jos-daily-brief/tweakers-seen-articles.json`) komt niet
+nog een keer terug. Stel in:
 
 ```bash
 OPENAI_API_KEY="jouw-api-key"
