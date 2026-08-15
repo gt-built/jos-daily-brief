@@ -9,8 +9,8 @@ services:
       - ./output:/app/output
     # Printer USB passthrough — uncomment once the Epson is attached to the
     # Proxmox host and passed into this VM (see docs/requirements.md / plan):
-    # devices:
-    #   - /dev/usb/lp0:/dev/usb/lp0
+    devices:
+      - /dev/usb/lp0:/dev/usb/lp0
 
   # Eenmalige (of periodieke) Google OAuth-login. network_mode: host is nodig
   # zodat de lokale redirect-server op "localhost" bereikbaar is zonder
