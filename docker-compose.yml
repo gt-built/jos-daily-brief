@@ -19,6 +19,8 @@ services:
     build: .
     env_file: .env
     network_mode: host
+    environment:
+      - PYTHONUNBUFFERED=1
     entrypoint: ["python", "-m", "daily_brief.google_contacts"]
     command: ["login"]
     volumes:
