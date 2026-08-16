@@ -64,6 +64,7 @@ class DailyBrief:
     birthdays: List[str] = field(default_factory=list)
     formula_one: Optional[FormulaOneResult] = None
     moon: Optional[MoonInsight] = None
+    moon_relationship: str = ""
     agenda: List[AgendaItem] = field(default_factory=list)
     tasks: List[Task] = field(default_factory=list)
     teletekst: List[str] = field(default_factory=list)

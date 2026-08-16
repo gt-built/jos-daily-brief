@@ -37,6 +37,31 @@ class RendererTests(unittest.TestCase):
         self.assertGreater(text.index("MAAN"), text.index("NIEUWS"))
         self.assertLess(text.index("MAAN"), text.index(brief.quote))
 
+    def test_text_includes_moon_relationship_within_moon_section(self) -> None:
+        from daily_brief.models import MoonInsight
+
+        brief = make_sample_brief()
+        brief.moon = MoonInsight("Volle Maan", "Kreeft", "Intens.", "Rust.")
+        brief.moon_relationship = "Een gecombineerde alinea over Jos en Malou."
+
+        text = render_text(brief)
+
+        self.assertIn(brief.moon_relationship, text)
+        self.assertGreater(text.index(brief.moon_relationship), text.index("MAAN"))
+        self.assertLess(text.index(brief.moon_relationship), text.index(brief.quote))
+
+    def test_png_supports_moon_relationship(self) -> None:
+        from daily_brief.models import MoonInsight
+
+        brief = make_sample_brief()
+        brief.moon = MoonInsight("Volle Maan", "Kreeft", "Intens.", "Rust.")
+        brief.moon_relationship = "Een gecombineerde alinea over Jos en Malou."
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "brief.png"
+            render_png(brief, output)
+            self.assertTrue(output.exists())
+
     def test_png_supports_birthdays_and_formula_one(self) -> None:
         brief = make_sample_brief()
         brief.birthdays = ["Anna"]

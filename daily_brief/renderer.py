@@ -71,6 +71,8 @@ def render_text(brief: DailyBrief) -> str:
         ]
         if brief.moon.personal_note:
             moon_lines.append(brief.moon.personal_note)
+        if brief.moon_relationship:
+            moon_lines.append(brief.moon_relationship)
         moon = "\n".join(moon_lines)
     formula_one = ""
     if brief.formula_one:
@@ -295,6 +297,8 @@ def render_png(brief: DailyBrief, output: Path) -> Path:
         paragraph(f"Doe: {brief.moon.tip}", small_font)
         if brief.moon.personal_note:
             paragraph(brief.moon.personal_note, small_font)
+        if brief.moon_relationship:
+            paragraph(brief.moon_relationship, small_font)
 
     line()
     centered(brief.quote, small_font, 20)

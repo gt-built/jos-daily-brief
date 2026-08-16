@@ -215,6 +215,42 @@ De NAS-sectie wordt alleen afgedrukt bij een concrete opslag-, temperatuur- of
 Security Advisor-waarschuwing. Een gezonde NAS neemt dus geen ruimte in op de
 bon. Alle broncaches staan in `~/.cache/jos-daily-brief/`.
 
+## Maan-relatie (Jos + Malou)
+
+Naast Jos' eigen maaninzicht (`daily_brief/moon.py`, puur regel-gebaseerd,
+geen API nodig) schrijft OpenAI er een doorlopende relatie-analyse van
+maximaal vijf zinnen bij: wat de actuele maanfase en het maanteken kunnen
+betekenen voor de omgang tussen Jos en Malou. Hergebruikt dezelfde
+`OPENAI_API_KEY`/`OPENAI_NEWS_MODEL` als de nieuwssectie en ververst één keer
+per (lokale) dag.
+
+Malou's profiel (geboortedatum, MBTI) is privacygevoelig en staat daarom niet
+in de broncode, maar in een niet-gecommit configbestand:
+
+```json
+{
+  "malou": {
+    "name": "Malou",
+    "sun_sign": "Kreeft",
+    "moon_sign": "Tweelingen",
+    "birth_phase": "Afnemende Sikkel",
+    "mbti": "ISTJ"
+  }
+}
+```
+
+Bewaar dit in `~/.config/jos-daily-brief/moon-relationship.json` met
+bestandsrechten `0600`:
+
+```bash
+chmod 600 ~/.config/jos-daily-brief/moon-relationship.json
+```
+
+Ontbreekt dit bestand, dan valt de sectie stil weg (`Maan-relatie: niet
+beschikbaar` in de bronvermeldingen) — de rest van de bon blijft gewoon
+compleet. De originele maangids-PDF's in `input/` (bron voor Jos' en Malou's
+profieldata) staan om dezelfde reden in `.gitignore`.
+
 ## Verouderd: Raspberry Pi user-timer
 
 De oorspronkelijke opzet draaide op een Raspberry Pi met een systemd

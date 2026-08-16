@@ -6,4 +6,5 @@ output/
 config/
 cache/
 .vscode/
+input/
 

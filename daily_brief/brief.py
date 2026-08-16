@@ -7,6 +7,7 @@ from .google_contacts import fetch_google_birthdays
 from .microsoft import fetch_microsoft_agenda
 from .models import SynologyStatus
 from .moon import fetch_moon_insight
+from .moon_relationship import fetch_moon_relationship_insight
 from .sample_data import make_sample_brief
 from .synology import fetch_synology_status
 from .teletekst import fetch_teletekst_headlines
@@ -23,6 +24,7 @@ def build_daily_brief(
     formula_one_fetcher: Callable = fetch_formula_one_result,
     birthday_fetcher: Callable = fetch_google_birthdays,
     moon_fetcher: Callable = fetch_moon_insight,
+    moon_relationship_fetcher: Callable = fetch_moon_relationship_insight,
     extra_tasks_fetcher: Callable = fetch_extra_tasks,
     teletekst_fetcher: Callable = fetch_teletekst_headlines,
 ):
@@ -70,6 +72,15 @@ def build_daily_brief(
             brief.source_notes.append("Maan: laatste stand")
     except Exception:
         brief.source_notes.append("Maan: niet beschikbaar")
+
+    if brief.moon:
+        try:
+            result = moon_relationship_fetcher(brief.moon)
+            brief.moon_relationship = result.text
+            if result.stale:
+                brief.source_notes.append("Maan-relatie: laatste stand")
+        except Exception:
+            brief.source_notes.append("Maan-relatie: niet beschikbaar")
 
     try:
         result = brainjos_fetcher()
